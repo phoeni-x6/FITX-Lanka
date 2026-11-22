@@ -12,6 +12,9 @@ import {
   Clock,
   Dumbbell,
   ChevronDown,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
 import { FaInstagram, FaFacebookF } from "react-icons/fa";
@@ -41,6 +44,67 @@ const faqs = [
 
 export default function ContactPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setLoading(true);
+    setSuccess("");
+    setError("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Unable to send your message.");
+      }
+
+      setSuccess(result.message);
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -85,7 +149,6 @@ export default function ContactPage() {
           </p>
 
           <div className="mt-9 space-y-5">
-            {/* EMAIL */}
             <div className="flex items-start gap-4 rounded-2xl border border-white/[0.07] bg-brand-card p-5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-lime/10">
                 <Mail size={20} className="text-brand-lime" />
@@ -104,7 +167,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* LOCATION */}
             <div className="flex items-start gap-4 rounded-2xl border border-white/[0.07] bg-brand-card p-5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-lime/10">
                 <MapPin size={20} className="text-brand-lime" />
@@ -122,7 +184,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* RESPONSE TIME */}
             <div className="flex items-start gap-4 rounded-2xl border border-white/[0.07] bg-brand-card p-5">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-lime/10">
                 <Clock size={20} className="text-brand-lime" />
@@ -185,50 +246,69 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Contact form submission will be enabled soon.");
-            }}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-xs font-semibold text-gray-300">
+                <label
+                  htmlFor="contact-name"
+                  className="mb-2 block text-xs font-semibold text-gray-300"
+                >
                   Your name
                 </label>
 
                 <input
+                  id="contact-name"
+                  name="name"
                   type="text"
                   required
+                  maxLength={100}
+                  value={formData.name}
+                  onChange={handleChange}
                   placeholder="Enter your name"
-                  className="w-full rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition placeholder:text-gray-600 focus:border-brand-lime/50"
+                  disabled={loading}
+                  className="w-full rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition placeholder:text-gray-600 focus:border-brand-lime/50 disabled:opacity-50"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-semibold text-gray-300">
+                <label
+                  htmlFor="contact-email"
+                  className="mb-2 block text-xs font-semibold text-gray-300"
+                >
                   Email address
                 </label>
 
                 <input
+                  id="contact-email"
+                  name="email"
                   type="email"
                   required
+                  maxLength={254}
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="you@example.com"
-                  className="w-full rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition placeholder:text-gray-600 focus:border-brand-lime/50"
+                  disabled={loading}
+                  className="w-full rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition placeholder:text-gray-600 focus:border-brand-lime/50 disabled:opacity-50"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-semibold text-gray-300">
+              <label
+                htmlFor="contact-subject"
+                className="mb-2 block text-xs font-semibold text-gray-300"
+              >
                 Subject
               </label>
 
               <select
+                id="contact-subject"
+                name="subject"
                 required
-                defaultValue=""
-                className="w-full rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition focus:border-brand-lime/50"
+                value={formData.subject}
+                onChange={handleChange}
+                disabled={loading}
+                className="w-full rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition focus:border-brand-lime/50 disabled:opacity-50"
               >
                 <option value="" disabled>
                   Select a subject
@@ -243,24 +323,65 @@ export default function ContactPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-semibold text-gray-300">
+              <label
+                htmlFor="contact-message"
+                className="mb-2 block text-xs font-semibold text-gray-300"
+              >
                 Your message
               </label>
 
               <textarea
+                id="contact-message"
+                name="message"
                 required
+                maxLength={5000}
                 rows={6}
+                value={formData.message}
+                onChange={handleChange}
                 placeholder="Tell us how we can help..."
-                className="w-full resize-none rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition placeholder:text-gray-600 focus:border-brand-lime/50"
+                disabled={loading}
+                className="w-full resize-none rounded-xl border border-white/10 bg-brand-background px-4 py-3.5 text-sm text-brand-cream outline-none transition placeholder:text-gray-600 focus:border-brand-lime/50 disabled:opacity-50"
               />
             </div>
 
+            {/* SUCCESS MESSAGE */}
+            {success && (
+              <div
+                role="status"
+                className="flex items-start gap-3 rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-400"
+              >
+                <CheckCircle2 size={19} className="mt-0.5 shrink-0" />
+                <p>{success}</p>
+              </div>
+            )}
+
+            {/* ERROR MESSAGE */}
+            {error && (
+              <div
+                role="alert"
+                className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400"
+              >
+                <AlertCircle size={19} className="mt-0.5 shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-lime px-6 py-4 text-sm font-bold text-brand-background transition hover:bg-brand-cream"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-lime px-6 py-4 text-sm font-bold text-brand-background transition hover:bg-brand-cream disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Send Message
-              <Send size={16} />
+              {loading ? (
+                <>
+                  <Loader2 size={17} className="animate-spin" />
+                  Sending Message...
+                </>
+              ) : (
+                <>
+                  Send Message
+                  <Send size={16} />
+                </>
+              )}
             </button>
 
             <p className="text-center text-[11px] leading-5 text-gray-500">
@@ -298,9 +419,7 @@ export default function ContactPage() {
                 >
                   <button
                     type="button"
-                    onClick={() =>
-                      setOpenFaq(isOpen ? null : index)
-                    }
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
                     className="flex w-full items-center justify-between gap-5 p-5 text-left sm:p-6"
                   >
                     <span className="text-sm font-semibold text-brand-cream sm:text-base">
