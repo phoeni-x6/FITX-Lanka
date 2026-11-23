@@ -1,24 +1,18 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Clock,
   CheckCircle2,
   XCircle,
   FileText,
-  MapPin,
   ArrowLeft,
   Loader2,
   Dumbbell,
   Building2,
-  UserRound,
   Image as ImageIcon,
-  Phone,
-  Mail,
-  Wallet,
-  Clock3,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -48,7 +42,7 @@ type GymApplication = {
 };
 
 export default function GymApplicationStatusPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [application, setApplication] =
     useState<GymApplication | null>(null);
@@ -57,6 +51,8 @@ export default function GymApplicationStatusPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadApplication() {
       try {
         setLoading(true);
@@ -66,6 +62,8 @@ export default function GymApplicationStatusPage() {
           data: { user },
           error: authError,
         } = await supabase.auth.getUser();
+
+        if (!isMounted) return;
 
         if (authError || !user) {
           setError("Please log in to view your application.");
@@ -80,6 +78,8 @@ export default function GymApplicationStatusPage() {
           .limit(1)
           .maybeSingle();
 
+        if (!isMounted) return;
+
         if (applicationError) {
           throw applicationError;
         }
@@ -92,14 +92,23 @@ export default function GymApplicationStatusPage() {
         setApplication(data as GymApplication);
       } catch (err) {
         console.error("Gym application status error:", err);
-        setError("Unable to load your application. Please try again.");
+
+        if (isMounted) {
+          setError("Unable to load your application. Please try again.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     loadApplication();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabase]);
 
   const status = application?.status?.toLowerCase();
 
@@ -128,7 +137,7 @@ export default function GymApplicationStatusPage() {
         "Unfortunately, your gym application was not approved at this time. Please review the feedback below.",
       icon: XCircle,
       color: "text-red-400",
-      background: "bg-red-400/10",
+      background: "bg-red-400/5",
       border: "border-red-400/20",
     },
   };
@@ -150,6 +159,7 @@ export default function GymApplicationStatusPage() {
 
     const [hours, minutes] = time.split(":");
     const date = new Date();
+
     date.setHours(Number(hours), Number(minutes), 0, 0);
 
     return date.toLocaleTimeString("en-LK", {
@@ -160,7 +170,7 @@ export default function GymApplicationStatusPage() {
   };
 
   const formatPrice = (price: number) =>
-    Number(price).toLocaleString("en-LK");
+    Number(price || 0).toLocaleString("en-LK");
 
   if (loading) {
     return (
@@ -359,99 +369,77 @@ export default function GymApplicationStatusPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Owner Name
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Owner Name</p>
               <p className="text-brand-cream font-medium">
                 {application.owner_name}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Owner Phone
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Owner Phone</p>
               <p className="text-brand-cream font-medium">
                 {application.owner_phone}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Email Address
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Email Address</p>
               <p className="text-brand-cream font-medium break-all">
                 {application.owner_email}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Gym Contact Number
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Gym Contact Number</p>
               <p className="text-brand-cream font-medium">
                 {application.contact_phone || "Not provided"}
               </p>
             </div>
 
             <div className="sm:col-span-2">
-              <p className="text-xs text-gray-500 mb-2">
-                Street Address
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Street Address</p>
               <p className="text-brand-cream font-medium">
                 {application.address}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                City
-              </p>
+              <p className="text-xs text-gray-500 mb-2">City</p>
               <p className="text-brand-cream font-medium">
                 {application.city}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                District
-              </p>
+              <p className="text-xs text-gray-500 mb-2">District</p>
               <p className="text-brand-cream font-medium">
                 {application.district}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Monthly Membership
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Monthly Membership</p>
               <p className="text-brand-cream font-medium">
                 LKR {formatPrice(application.monthly_price)}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Application ID
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Application ID</p>
               <p className="text-gray-400 text-xs break-all">
                 {application.id}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Opening Time
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Opening Time</p>
               <p className="text-brand-cream font-medium">
                 {formatTime(application.opening_time)}
               </p>
             </div>
 
             <div>
-              <p className="text-xs text-gray-500 mb-2">
-                Closing Time
-              </p>
+              <p className="text-xs text-gray-500 mb-2">Closing Time</p>
               <p className="text-brand-cream font-medium">
                 {formatTime(application.closing_time)}
               </p>
