@@ -15,7 +15,9 @@ import {
   Plus,
   MapPin,
 } from "lucide-react";
+
 import LogoutButton from "@/components/auth/LogoutButton";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard, active: true },
@@ -60,10 +62,14 @@ export default function DashboardPage() {
 
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/[0.07] bg-[#1C201D] lg:flex">
-        <Link href="/" className="flex h-20 items-center gap-3 border-b border-white/[0.07] px-7">
+        <Link
+          href="/"
+          className="flex h-20 items-center gap-3 border-b border-white/[0.07] px-7"
+        >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime text-brand-background">
             <Dumbbell size={22} strokeWidth={2.5} />
           </div>
+
           <div>
             <h1 className="text-lg font-extrabold">
               FitX <span className="text-brand-lime">Lanka</span>
@@ -109,6 +115,7 @@ export default function DashboardPage() {
             <p className="mt-1 text-xs leading-5 text-gray-500">
               Find the right trainer or gym for your goals.
             </p>
+
             <Link
               href="/trainers"
               className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-brand-lime hover:underline"
@@ -116,6 +123,7 @@ export default function DashboardPage() {
               Explore trainers <ArrowUpRight size={14} />
             </Link>
           </div>
+
           <LogoutButton />
         </div>
       </aside>
@@ -127,20 +135,16 @@ export default function DashboardPage() {
         <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-brand-background/90 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between px-5 sm:px-8">
             <div>
-              <p className="text-xs text-gray-500">Your fitness journey</p>
+              <p className="text-xs text-gray-500">
+                Your fitness journey
+              </p>
               <p className="text-sm font-semibold text-brand-cream">
                 Client Dashboard
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/notifications"
-                aria-label="Notifications"
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-gray-400 transition hover:border-brand-lime hover:text-brand-lime"
-              >
-                <Bell size={18} />
-              </Link>
+              <NotificationBell />
 
               <Link
                 href="/profile"
@@ -165,7 +169,9 @@ export default function DashboardPage() {
 
               <h1 className="mt-5 text-3xl font-extrabold leading-tight sm:text-4xl">
                 Welcome to your
-                <span className="block text-brand-lime">fitness journey.</span>
+                <span className="block text-brand-lime">
+                  fitness journey.
+                </span>
               </h1>
 
               <p className="mt-4 max-w-lg text-sm leading-7 text-gray-400">
@@ -216,6 +222,7 @@ export default function DashboardPage() {
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime/10 text-brand-lime">
                         <Icon size={19} />
                       </div>
+
                       <span className="text-2xl font-extrabold tabular-nums">
                         {stat.value}
                       </span>
@@ -224,6 +231,7 @@ export default function DashboardPage() {
                     <h3 className="mt-5 text-sm font-semibold">
                       {stat.label}
                     </h3>
+
                     <p className="mt-1 text-xs text-gray-500">
                       {stat.description}
                     </p>
@@ -240,7 +248,9 @@ export default function DashboardPage() {
             <div className="rounded-2xl border border-white/[0.07] bg-brand-card p-6 xl:col-span-2">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-bold">Recent bookings</h2>
+                  <h2 className="text-lg font-bold">
+                    Recent bookings
+                  </h2>
                   <p className="mt-1 text-xs text-gray-500">
                     Keep track of your latest requests.
                   </p>
@@ -292,12 +302,14 @@ export default function DashboardPage() {
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-lime/10 text-brand-lime">
                     <Dumbbell size={20} />
                   </div>
+
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold">Find Trainers</p>
                     <p className="mt-1 text-xs text-gray-500">
                       Connect with professionals
                     </p>
                   </div>
+
                   <ArrowUpRight size={16} className="text-gray-500 transition group-hover:text-brand-lime" />
                 </Link>
 
@@ -308,12 +320,14 @@ export default function DashboardPage() {
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-lime/10 text-brand-lime">
                     <MapPin size={20} />
                   </div>
+
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold">Explore Gyms</p>
                     <p className="mt-1 text-xs text-gray-500">
                       Discover gyms near you
                     </p>
                   </div>
+
                   <ArrowUpRight size={16} className="text-gray-500 transition group-hover:text-brand-lime" />
                 </Link>
 
@@ -324,12 +338,14 @@ export default function DashboardPage() {
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-lime/10 text-brand-lime">
                     <UserRound size={20} />
                   </div>
+
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold">My Profile</p>
                     <p className="mt-1 text-xs text-gray-500">
                       Manage your account details
                     </p>
                   </div>
+
                   <ArrowUpRight size={16} className="text-gray-500 transition group-hover:text-brand-lime" />
                 </Link>
               </div>
@@ -346,6 +362,7 @@ export default function DashboardPage() {
                 Your next fitness opportunity is just around the corner.
               </p>
             </div>
+
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-xs font-bold text-brand-lime hover:underline"
@@ -353,7 +370,6 @@ export default function DashboardPage() {
               Back to FitX Lanka <ArrowUpRight size={14} />
             </Link>
           </div>
-
         </div>
       </main>
     </div>
