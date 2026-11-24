@@ -25,17 +25,33 @@ export default function GymDashboardSidebar({
   mobileOpen = false,
   onClose,
 }: Props) {
-  const navigation = [
-    { name: "Overview", href: "#overview", icon: LayoutDashboard },
-    { name: "Booking Requests", href: "#bookings", icon: CalendarDays },
-    {
-      name: "Public Gym Profile",
-      href: gymId ? `/gyms/${gymId}` : "/gyms",
-      icon: Building2,
-    },
-    { name: "Notifications", href: "/notifications", icon: Bell },
-    { name: "Account Profile", href: "/profile", icon: UserRound },
-  ];
+ const navigation = [
+  {
+    name: "Overview",
+    href: "/gym/dashboard#overview",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Booking Requests",
+    href: "/gym/dashboard#bookings",
+    icon: CalendarDays,
+  },
+  {
+    name: "Public Gym Profile",
+    href: gymId ? `/gyms/${gymId}` : "/gyms",
+    icon: Building2,
+  },
+  {
+    name: "Notifications",
+    href: "/gym/dashboard/notifications",
+    icon: Bell,
+  },
+  {
+    name: "Account Profile",
+    href: "/profile",
+    icon: UserRound,
+  },
+];
 
   return (
     <>

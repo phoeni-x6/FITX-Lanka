@@ -2,6 +2,22 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+type UserRole = "client" | "trainer" | "gym_owner" | "admin";
+
+function getDashboardPath(role: string) {
+  switch (role) {
+    case "trainer":
+      return "/trainers/dashboard";
+    case "gym_owner":
+      return "/gym/dashboard";
+    case "admin":
+      return "/admin/dashboard";
+    case "client":
+    default:
+      return "/dashboard";
+  }
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -63,6 +79,7 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
+
     url.searchParams.set(
       "redirectTo",
       `${pathname}${request.nextUrl.search}`
@@ -97,28 +114,41 @@ export async function proxy(request: NextRequest) {
     return redirect("/complete-profile");
   }
 
+  const role = profile.role as UserRole;
+  const correctDashboard = getDashboardPath(role);
+
+  // Client dashboard: clients only.
+  if (
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/")
+  ) {
+    if (role !== "client") {
+      return redirect(correctDashboard, "unauthorized");
+    }
+  }
+
   // Trainer dashboard: trainers only.
   if (
     pathname.startsWith("/trainers/dashboard") &&
-    profile.role !== "trainer"
+    role !== "trainer"
   ) {
-    return redirect("/dashboard", "unauthorized");
+    return redirect(correctDashboard, "unauthorized");
   }
 
   // Gym dashboard: gym owners only.
   if (
     pathname.startsWith("/gym/dashboard") &&
-    profile.role !== "gym_owner"
+    role !== "gym_owner"
   ) {
-    return redirect("/dashboard", "unauthorized");
+    return redirect(correctDashboard, "unauthorized");
   }
 
   // Admin area: admins only.
   if (
     pathname.startsWith("/admin") &&
-    profile.role !== "admin"
+    role !== "admin"
   ) {
-    return redirect("/dashboard", "unauthorized");
+    return redirect(correctDashboard, "unauthorized");
   }
 
   return supabaseResponse;
