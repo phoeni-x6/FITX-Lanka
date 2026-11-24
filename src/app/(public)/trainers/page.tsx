@@ -1,90 +1,165 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+import type { Trainer, TrainerQualification } from "@/data/trainers";
+
 import TrainersHero from "@/components/trainers/TrainersHero";
 import TrainerFilters from "@/components/trainers/TrainerFilters";
 import TrainerGrid from "@/components/trainers/TrainerGrid";
 import BecomeTrainerCTA from "@/components/trainers/BecomeTrainerCTA";
-import { trainers, specialties, locations } from "@/data/trainers";
+
+type PublicTrainerRow = {
+  id: string;
+  full_name: string;
+  specialty: string;
+  location: string;
+  experience_years: number;
+  price_per_session: number | null;
+  profile_image_url: string | null;
+  specialties: string[] | null;
+  qualifications: TrainerQualification[] | null;
+};
 
 export default function TrainersPage() {
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
-  const [specialty, setSpecialty] = useState("All");
-  const [location, setLocation] = useState("All Locations");
+  const [selectedSpecialty, setSelectedSpecialty] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState("All Locations");
+
+  const supabase = useMemo(() => createClient(), []);
+
+  useEffect(() => {
+    async function fetchTrainers() {
+      setLoading(true);
+      setError("");
+
+      const { data, error } = await supabase.rpc("get_public_trainers");
+
+      if (error) {
+        console.error("Error fetching trainers:", error);
+        setError("Unable to load trainers. Please try again later.");
+        setTrainers([]);
+        setLoading(false);
+        return;
+      }
+
+      const formattedTrainers: Trainer[] = (
+        (data ?? []) as PublicTrainerRow[]
+      ).map((trainer) => ({
+        id: trainer.id,
+        name: trainer.full_name,
+        specialty: trainer.specialty,
+        location: trainer.location,
+        experience: trainer.experience_years,
+        price:
+          trainer.price_per_session === null
+            ? null
+            : Number(trainer.price_per_session),
+        image: trainer.profile_image_url,
+        tags: trainer.specialties ?? [],
+        qualifications: trainer.qualifications ?? [],
+      }));
+
+      setTrainers(formattedTrainers);
+      setLoading(false);
+    }
+
+    fetchTrainers();
+  }, [supabase]);
+
+  const specialties = useMemo(() => {
+    const values = trainers
+      .map((trainer) => trainer.specialty)
+      .filter(Boolean);
+
+    return ["All", ...Array.from(new Set(values)).sort()];
+  }, [trainers]);
+
+  const locations = useMemo(() => {
+    const values = trainers
+      .map((trainer) => trainer.location)
+      .filter(Boolean);
+
+    return ["All Locations", ...Array.from(new Set(values)).sort()];
+  }, [trainers]);
 
   const filteredTrainers = useMemo(() => {
     return trainers.filter((trainer) => {
+      const searchValue = search.toLowerCase();
+
       const matchesSearch =
-        trainer.name.toLowerCase().includes(search.toLowerCase()) ||
-        trainer.specialty.toLowerCase().includes(search.toLowerCase()) ||
-        trainer.tags.some((tag) =>
-          tag.toLowerCase().includes(search.toLowerCase())
+        trainer.name.toLowerCase().includes(searchValue) ||
+        trainer.specialty.toLowerCase().includes(searchValue) ||
+        trainer.location.toLowerCase().includes(searchValue) ||
+        trainer.qualifications.some((qualification) =>
+          qualification.qualification_name
+            .toLowerCase()
+            .includes(searchValue)
         );
 
       const matchesSpecialty =
-        specialty === "All" || trainer.specialty === specialty;
+        selectedSpecialty === "All" ||
+        trainer.specialty === selectedSpecialty;
 
       const matchesLocation =
-        location === "All Locations" || trainer.location === location;
+        selectedLocation === "All Locations" ||
+        trainer.location === selectedLocation;
 
       return matchesSearch && matchesSpecialty && matchesLocation;
     });
-  }, [search, specialty, location]);
+  }, [
+    trainers,
+    search,
+    selectedSpecialty,
+    selectedLocation,
+  ]);
 
   const clearFilters = () => {
     setSearch("");
-    setSpecialty("All");
-    setLocation("All Locations");
+    setSelectedSpecialty("All");
+    setSelectedLocation("All Locations");
   };
 
   return (
-    <div className="min-h-screen bg-brand-background text-brand-cream">
+    <main className="min-h-screen bg-brand-charcoal">
       <TrainersHero />
 
-      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10 lg:py-20">
-        <div className="mb-9 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-lime">
-              Find your match
-            </p>
-
-            <h2 className="mt-3 text-2xl font-extrabold sm:text-3xl">
-              Explore Personal Trainers
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              Browse trainers and find the right fit for your goals.
-            </p>
-          </div>
-
-          <p className="text-sm text-gray-400">
-            <span className="font-bold text-brand-cream">
-              {filteredTrainers.length}
-            </span>{" "}
-            trainers found
-          </p>
-        </div>
-
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <TrainerFilters
           search={search}
           setSearch={setSearch}
-          specialty={specialty}
-          setSpecialty={setSpecialty}
-          location={location}
-          setLocation={setLocation}
+          specialty={selectedSpecialty}
+          setSpecialty={setSelectedSpecialty}
+          location={selectedLocation}
+          setLocation={setSelectedLocation}
           specialties={specialties}
           locations={locations}
           clearFilters={clearFilters}
         />
 
-        <TrainerGrid
-          trainers={filteredTrainers}
-          clearFilters={clearFilters}
-        />
+        {loading ? (
+          <div className="py-20 text-center text-white/60">
+            Loading trainers...
+          </div>
+        ) : error ? (
+          <div className="py-20 text-center text-red-400">
+            {error}
+          </div>
+        ) : (
+          <TrainerGrid
+            trainers={filteredTrainers}
+            clearFilters={clearFilters}
+          />
+        )}
       </section>
 
       <BecomeTrainerCTA />
-    </div>
+    </main>
   );
 }

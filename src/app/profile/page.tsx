@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
+import ClientMobileMenu from "@/components/dashboard/ClientMobileMenu";
 
 type Profile = {
   display_name: string;
@@ -345,7 +346,9 @@ export default function AccountProfilePage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-brand-background text-brand-cream">
         <Loader2 size={32} className="animate-spin text-brand-lime" />
-        <p className="mt-4 text-sm text-gray-400">Loading your account...</p>
+        <p className="mt-4 text-sm text-gray-400">
+          Loading your account...
+        </p>
       </div>
     );
   }
@@ -370,17 +373,21 @@ export default function AccountProfilePage() {
   return (
     <main className="min-h-screen bg-brand-background text-brand-cream">
       {/* Top navigation */}
-      <header className="border-b border-white/[0.07] bg-[#1C201D]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime text-brand-background">
-              <Dumbbell size={21} strokeWidth={2.5} />
-            </div>
+      <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-[#1C201D]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            {profile.role === "client" && <ClientMobileMenu />}
 
-            <span className="text-lg font-extrabold">
-              FitX <span className="text-brand-lime">Lanka</span>
-            </span>
-          </Link>
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-lime text-brand-background">
+                <Dumbbell size={21} strokeWidth={2.5} />
+              </div>
+
+              <span className="text-lg font-extrabold">
+                FitX <span className="text-brand-lime">Lanka</span>
+              </span>
+            </Link>
+          </div>
 
           <Link
             href={dashboardLink}
@@ -698,4 +705,3 @@ export default function AccountProfilePage() {
     </main>
   );
 }
- 
